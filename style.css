@@ -77,10 +77,11 @@ input:focus { border-color: var(--primary-color); background: #fff; }
     font-family: var(--font-body);
     font-weight: 600;
     cursor: pointer;
-    /* This transition makes the run-away effect smooth */
-    transition: all 0.4s ease-out; 
+    /* Smooth sliding effect */
+    transition: left 0.3s ease, top 0.3s ease; 
     text-transform: uppercase;
-    z-index: 10; 
+    z-index: 100; /* Ensure it stays on top */
+    position: relative; /* Default position */
 }
 .primary-btn { background-color: var(--primary-color); color: white; width: 100%; }
 .primary-btn:hover { background-color: var(--primary-hover); transform: scale(1.02); }
