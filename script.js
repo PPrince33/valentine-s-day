@@ -52,49 +52,49 @@ document.addEventListener("DOMContentLoaded", () => {
         const phone = params.get("phone");
 
         document.getElementById("displaySenderName").textContent = sender;
-        const receiverInput = document.getElementById("receiverName");
-        receiverInput.value = crush;
+        document.getElementById("receiverName").value = crush;
         mainQuestion.innerHTML = `Hey ${crush}, be my Valentine? 💖`;
 
         const yesBtn = document.getElementById("yesBtn");
         const noBtn = document.getElementById("noBtn");
         const interactionArea = document.getElementById("interactionArea");
         const successMessage = document.getElementById("successMessage");
+        const receiverInput = document.getElementById("receiverName");
 
-        // Make NO button position absolute and add smooth transition for movement
-        noBtn.style.position = "absolute";
-        noBtn.style.transition = "left 0.3s ease, top 0.3s ease";
-
-        // Save NO button original position on load
-        let noBtnOriginalPos = { x: 0, y: 0 };
+        // --- TEASING LOGIC (The Dodge) ---
+        
+        // 1. Setup initial position
+        // We capture where the button is naturally, then set it to absolute
+        // so it stays there but becomes movable.
         const rect = noBtn.getBoundingClientRect();
-        noBtnOriginalPos.x = rect.left;
-        noBtnOriginalPos.y = rect.top;
-
+        const noBtnOriginalPos = { x: rect.left, y: rect.top };
+        
+        noBtn.style.position = "absolute";
         noBtn.style.left = `${noBtnOriginalPos.x}px`;
         noBtn.style.top = `${noBtnOriginalPos.y}px`;
+        noBtn.style.transition = "left 0.2s ease, top 0.2s ease"; // Fast transition for "dodge" effect
 
-        const maxMoveDistance = 30; // Max pixels to move in any direction
+        const maxMoveDistance = 50; // Pixels it can jump away from center
         let moveTimeout;
 
-        // Function to move NO button teasingly within box around original pos
         const moveNoBtn = (mouseX, mouseY) => {
             const btnRect = noBtn.getBoundingClientRect();
             const btnCenterX = btnRect.left + btnRect.width / 2;
             const btnCenterY = btnRect.top + btnRect.height / 2;
 
-            // Calculate distance from mouse to center of button
+            // Calculate distance from mouse to button center
             const distance = Math.hypot(mouseX - btnCenterX, mouseY - btnCenterY);
 
+            // If mouse is close (within 80px), DODGE!
             if (distance < 80) {
-                // Random offset in range [-maxMoveDistance, maxMoveDistance]
+                // Pick a random spot near the ORIGINAL position
                 const offsetX = (Math.random() * 2 - 1) * maxMoveDistance;
                 const offsetY = (Math.random() * 2 - 1) * maxMoveDistance;
 
                 let newX = noBtnOriginalPos.x + offsetX;
                 let newY = noBtnOriginalPos.y + offsetY;
 
-                // Clamp inside viewport with 10px padding
+                // Keep it on screen
                 const padding = 10;
                 const maxLeft = window.innerWidth - noBtn.offsetWidth - padding;
                 const maxTop = window.innerHeight - noBtn.offsetHeight - padding;
@@ -105,7 +105,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 noBtn.style.left = `${newX}px`;
                 noBtn.style.top = `${newY}px`;
 
-                // Clear previous reset timeout and set new one to reset position
+                // Optional: Return to center if they stop chasing it for 2 seconds
                 if (moveTimeout) clearTimeout(moveTimeout);
                 moveTimeout = setTimeout(() => {
                     noBtn.style.left = `${noBtnOriginalPos.x}px`;
@@ -114,37 +114,31 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         };
 
-        // Mousemove listener to trigger NO button move near cursor
-        document.addEventListener("mousemove", (e) => {
-            moveNoBtn(e.clientX, e.clientY);
-        });
-
-        // Touch support for mobile
+        // Event Listeners for Movement
+        document.addEventListener("mousemove", (e) => moveNoBtn(e.clientX, e.clientY));
+        
         noBtn.addEventListener("touchstart", (e) => {
             e.preventDefault();
             const touch = e.touches[0];
             moveNoBtn(touch.clientX, touch.clientY);
         });
 
-        // Prevent default NO button click, move it instead
         noBtn.addEventListener("click", (e) => {
             e.preventDefault();
             moveNoBtn(e.clientX, e.clientY);
         });
 
-        // YES button click handler
+        // --- YES BUTTON LOGIC ---
         yesBtn.addEventListener("click", () => {
             const finalReceiverName = receiverInput.value.trim() || crush;
 
             interactionArea.style.display = "none";
             successMessage.classList.remove("hidden");
 
-            // Compose WhatsApp message with sender and receiver names
             const message = `Hey ${sender}! It's ${finalReceiverName}. I said YES to being your Valentine! 💖💘`;
             const waNumber = phone ? phone : ""; 
             const waLink = `https://wa.me/${waNumber}?text=${encodeURIComponent(message)}`;
 
-            // Redirect to WhatsApp after short delay
             setTimeout(() => {
                 window.location.href = waLink;
             }, 1500);
