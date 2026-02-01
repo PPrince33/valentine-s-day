@@ -52,81 +52,80 @@ document.addEventListener("DOMContentLoaded", () => {
         const phone = params.get("phone");
 
         document.getElementById("displaySenderName").textContent = sender;
-        document.getElementById("receiverName").value = crush;
+        const receiverInput = document.getElementById("receiverName");
+        receiverInput.value = crush;
         mainQuestion.innerHTML = `Hey ${crush}, be my Valentine? 💖`;
 
         const yesBtn = document.getElementById("yesBtn");
         const noBtn = document.getElementById("noBtn");
         const interactionArea = document.getElementById("interactionArea");
         const successMessage = document.getElementById("successMessage");
-        const receiverInput = document.getElementById("receiverName");
 
         // --- TEASING LOGIC (The Dodge) ---
-        
-        // 1. Setup initial position
-        // We capture where the button is naturally, then set it to absolute
-        // so it stays there but becomes movable.
-        const rect = noBtn.getBoundingClientRect();
-        const noBtnOriginalPos = { x: rect.left, y: rect.top };
-        
-        noBtn.style.position = "absolute";
-        noBtn.style.left = `${noBtnOriginalPos.x}px`;
-        noBtn.style.top = `${noBtnOriginalPos.y}px`;
-        noBtn.style.transition = "left 0.2s ease, top 0.2s ease"; // Fast transition for "dodge" effect
+        setTimeout(() => {
+            // Capture original position relative to offsetParent
+            const noBtnOriginalPos = {
+                x: noBtn.offsetLeft,
+                y: noBtn.offsetTop
+            };
 
-        const maxMoveDistance = 50; // Pixels it can jump away from center
-        let moveTimeout;
+            // Fix position and set smooth transitions
+            noBtn.style.position = "absolute";
+            noBtn.style.left = `${noBtnOriginalPos.x}px`;
+            noBtn.style.top = `${noBtnOriginalPos.y}px`;
+            noBtn.style.transition = "left 0.2s ease, top 0.2s ease";
 
-        const moveNoBtn = (mouseX, mouseY) => {
-            const btnRect = noBtn.getBoundingClientRect();
-            const btnCenterX = btnRect.left + btnRect.width / 2;
-            const btnCenterY = btnRect.top + btnRect.height / 2;
+            const maxMoveDistance = 50; // max pixels to jump from original spot
+            let moveTimeout;
 
-            // Calculate distance from mouse to button center
-            const distance = Math.hypot(mouseX - btnCenterX, mouseY - btnCenterY);
+            const moveNoBtn = (mouseX, mouseY) => {
+                const btnRect = noBtn.getBoundingClientRect();
+                const btnCenterX = btnRect.left + btnRect.width / 2;
+                const btnCenterY = btnRect.top + btnRect.height / 2;
 
-            // If mouse is close (within 80px), DODGE!
-            if (distance < 80) {
-                // Pick a random spot near the ORIGINAL position
-                const offsetX = (Math.random() * 2 - 1) * maxMoveDistance;
-                const offsetY = (Math.random() * 2 - 1) * maxMoveDistance;
+                const distance = Math.hypot(mouseX - btnCenterX, mouseY - btnCenterY);
 
-                let newX = noBtnOriginalPos.x + offsetX;
-                let newY = noBtnOriginalPos.y + offsetY;
+                if (distance < 80) {
+                    // Random offset within ± maxMoveDistance
+                    const offsetX = (Math.random() * 2 - 1) * maxMoveDistance;
+                    const offsetY = (Math.random() * 2 - 1) * maxMoveDistance;
 
-                // Keep it on screen
-                const padding = 10;
-                const maxLeft = window.innerWidth - noBtn.offsetWidth - padding;
-                const maxTop = window.innerHeight - noBtn.offsetHeight - padding;
+                    let newX = noBtnOriginalPos.x + offsetX;
+                    let newY = noBtnOriginalPos.y + offsetY;
 
-                newX = Math.min(Math.max(newX, padding), maxLeft);
-                newY = Math.min(Math.max(newY, padding), maxTop);
+                    // Clamp so button stays inside viewport with padding
+                    const padding = 10;
+                    const maxLeft = window.innerWidth - noBtn.offsetWidth - padding;
+                    const maxTop = window.innerHeight - noBtn.offsetHeight - padding;
 
-                noBtn.style.left = `${newX}px`;
-                noBtn.style.top = `${newY}px`;
+                    newX = Math.min(Math.max(newX, padding), maxLeft);
+                    newY = Math.min(Math.max(newY, padding), maxTop);
 
-                // Optional: Return to center if they stop chasing it for 2 seconds
-                if (moveTimeout) clearTimeout(moveTimeout);
-                moveTimeout = setTimeout(() => {
-                    noBtn.style.left = `${noBtnOriginalPos.x}px`;
-                    noBtn.style.top = `${noBtnOriginalPos.y}px`;
-                }, 2000);
-            }
-        };
+                    noBtn.style.left = `${newX}px`;
+                    noBtn.style.top = `${newY}px`;
 
-        // Event Listeners for Movement
-        document.addEventListener("mousemove", (e) => moveNoBtn(e.clientX, e.clientY));
-        
-        noBtn.addEventListener("touchstart", (e) => {
-            e.preventDefault();
-            const touch = e.touches[0];
-            moveNoBtn(touch.clientX, touch.clientY);
-        });
+                    if (moveTimeout) clearTimeout(moveTimeout);
+                    moveTimeout = setTimeout(() => {
+                        noBtn.style.left = `${noBtnOriginalPos.x}px`;
+                        noBtn.style.top = `${noBtnOriginalPos.y}px`;
+                    }, 2000);
+                }
+            };
 
-        noBtn.addEventListener("click", (e) => {
-            e.preventDefault();
-            moveNoBtn(e.clientX, e.clientY);
-        });
+            // Event listeners for NO button movement
+            document.addEventListener("mousemove", (e) => moveNoBtn(e.clientX, e.clientY));
+
+            noBtn.addEventListener("touchstart", (e) => {
+                e.preventDefault();
+                const touch = e.touches[0];
+                moveNoBtn(touch.clientX, touch.clientY);
+            });
+
+            noBtn.addEventListener("click", (e) => {
+                e.preventDefault();
+                moveNoBtn(e.clientX, e.clientY);
+            });
+        }, 0);
 
         // --- YES BUTTON LOGIC ---
         yesBtn.addEventListener("click", () => {
