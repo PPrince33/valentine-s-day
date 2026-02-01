@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
     
-    // --- PART 1: INDEX.HTML LOGIC (Sender creates link) ---
+    // --- PART 1: INDEX.HTML LOGIC ---
     const createLinkBtn = document.getElementById("createLinkBtn");
 
     if (createLinkBtn) {
@@ -22,14 +22,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            // Clean phone number (digits only)
             const cleanPhone = phone.replace(/\D/g, '');
-
-            // Construct Link
             const currentUrl = window.location.href;
             const baseUrl = currentUrl.substring(0, currentUrl.lastIndexOf("/")) + "/valentine.html";
-            
-            // Encode all data
             const finalLink = `${baseUrl}?sender=${encodeURIComponent(sender)}&crush=${encodeURIComponent(crush)}&phone=${cleanPhone}`;
 
             generatedLinkInput.value = finalLink;
@@ -47,21 +42,17 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // --- PART 2: VALENTINE.HTML LOGIC (Receiver sees question) ---
+    // --- PART 2: VALENTINE.HTML LOGIC ---
     const mainQuestion = document.getElementById("mainQuestion");
 
     if (mainQuestion) {
-        // 1. Get Params
         const params = new URLSearchParams(window.location.search);
         const sender = params.get("sender") || "Admirer";
         const crush = params.get("crush") || "You";
         const phone = params.get("phone");
 
-        // 2. Personalize Page
-        // "Hey [Crush], will you be [Sender]'s Valentine?"
-        // Or simply update the names in existing elements
         document.getElementById("displaySenderName").textContent = sender;
-        document.getElementById("receiverName").value = crush; // Pre-fill their name
+        document.getElementById("receiverName").value = crush;
         mainQuestion.innerHTML = `Hey ${crush}, be my Valentine? 💖`;
 
         const yesBtn = document.getElementById("yesBtn");
@@ -70,20 +61,25 @@ document.addEventListener("DOMContentLoaded", () => {
         const successMessage = document.getElementById("successMessage");
         const receiverInput = document.getElementById("receiverName");
 
-        // 3. THE IRRITATING "NO" BUTTON LOGIC (Proximity Check)
+        // --- TEASING MOVE LOGIC ---
         const moveButton = () => {
+            // Calculate a random position within the window
+            // Subtract button size so it doesn't go off screen
             const x = Math.random() * (window.innerWidth - noBtn.offsetWidth - 20);
             const y = Math.random() * (window.innerHeight - noBtn.offsetHeight - 20);
-            noBtn.style.position = "fixed"; // Fixed ensures it breaks out of the flex container
+            
+            noBtn.style.position = "fixed"; // Break out of flow
             noBtn.style.left = `${x}px`;
             noBtn.style.top = `${y}px`;
         };
 
-        // Standard hover/click (fallback)
-        noBtn.addEventListener("click", (e) => { e.preventDefault(); moveButton(); });
-        noBtn.addEventListener("mouseover", moveButton);
+        // 1. Mobile Touch (Instant Jump)
+        noBtn.addEventListener("touchstart", (e) => {
+             e.preventDefault(); 
+             moveButton(); 
+        });
 
-        // Advanced Proximity Logic (The "Force Field")
+        // 2. Desktop Mouse Proximity (Teasing Slide)
         document.addEventListener("mousemove", (e) => {
             const btnRect = noBtn.getBoundingClientRect();
             const btnCenterX = btnRect.left + btnRect.width / 2;
@@ -95,13 +91,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 Math.pow(e.clientY - btnCenterY, 2)
             );
 
-            // If closer than 150px (approx 3-4cm), MOVE IT!
-            if (distance < 150) {
+            // TEASING DISTANCE: 80px (approx 2cm)
+            // It lets you get closer before running away!
+            if (distance < 80) {
                 moveButton();
             }
         });
+        
+        // Fallback click handler just in case
+        noBtn.addEventListener("click", (e) => { e.preventDefault(); moveButton(); });
 
-        // 4. YES Button Logic
+        // --- YES BUTTON LOGIC ---
         yesBtn.addEventListener("click", () => {
             const finalReceiverName = receiverInput.value.trim() || crush;
 
