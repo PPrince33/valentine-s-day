@@ -14,14 +14,23 @@
         <p class="subtitle">Craft a moment of romance, elegantly.</p>
         
         <div class="card">
-            <p class="prompt-text">Enter your name to generate a unique link for your special someone.</p>
+            <p class="prompt-text">Enter your details to generate a unique link for your special someone.</p>
             
-            <input type="text" id="senderNameInput" placeholder="Your name" autocomplete="off">
+            <div class="input-group">
+                <label>Your Name</label>
+                <input type="text" id="senderName" placeholder="e.g. Harry" autocomplete="off">
+            </div>
+
+            <div class="input-group">
+                <label>Your WhatsApp Number (with Country Code)</label>
+                <p class="tiny-help">Example: 919876543210 (No + or spaces)</p>
+                <input type="number" id="senderPhone" placeholder="e.g. 1555019988" autocomplete="off">
+            </div>
             
             <button id="createLinkBtn" class="btn primary-btn">Create Link</button>
             
             <div id="resultArea" class="hidden">
-                <p>Share this link:</p>
+                <p>Send this link to your crush:</p>
                 <div class="link-box">
                     <input type="text" id="generatedLink" readonly>
                     <button id="copyBtn" class="btn sm-btn">Copy</button>
@@ -30,7 +39,7 @@
         </div>
 
         <footer>
-            made by <span class="brand">PP33</span> &bull; <a href="https://pp33.carrd.co/" target="_blank">Visit</a>
+            made by <span class="brand">PP33</span>
         </footer>
     </div>
 
