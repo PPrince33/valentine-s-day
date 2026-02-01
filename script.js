@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
     
-    // --- PART 1: INDEX.HTML LOGIC ---
+    // --- PART 1: INDEX.HTML LOGIC (Sender creates link) ---
     const createLinkBtn = document.getElementById("createLinkBtn");
 
     if (createLinkBtn) {
@@ -22,7 +22,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
+            // Remove non-numeric characters from phone
             const cleanPhone = phone.replace(/\D/g, '');
+
+            // Construct the Link
             const currentUrl = window.location.href;
             const baseUrl = currentUrl.substring(0, currentUrl.lastIndexOf("/")) + "/valentine.html";
             const finalLink = `${baseUrl}?sender=${encodeURIComponent(sender)}&crush=${encodeURIComponent(crush)}&phone=${cleanPhone}`;
@@ -34,7 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         copyBtn.addEventListener("click", () => {
             generatedLinkInput.select();
-            generatedLinkInput.setSelectionRange(0, 99999);
+            generatedLinkInput.setSelectionRange(0, 99999); // Mobile fix
             navigator.clipboard.writeText(generatedLinkInput.value).then(() => {
                 copyBtn.textContent = "Copied!";
                 setTimeout(() => copyBtn.textContent = "Copy", 2000);
@@ -42,7 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // --- PART 2: VALENTINE.HTML LOGIC ---
+    // --- PART 2: VALENTINE.HTML LOGIC (Receiver sees question) ---
     const mainQuestion = document.getElementById("mainQuestion");
 
     if (mainQuestion) {
@@ -64,11 +67,10 @@ document.addEventListener("DOMContentLoaded", () => {
         // --- TEASING MOVE LOGIC ---
         const moveButton = () => {
             // Calculate a random position within the window
-            // Subtract button size so it doesn't go off screen
             const x = Math.random() * (window.innerWidth - noBtn.offsetWidth - 20);
             const y = Math.random() * (window.innerHeight - noBtn.offsetHeight - 20);
             
-            noBtn.style.position = "fixed"; // Break out of flow
+            noBtn.style.position = "fixed"; // Fixed allows free movement over everything
             noBtn.style.left = `${x}px`;
             noBtn.style.top = `${y}px`;
         };
@@ -98,7 +100,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
         
-        // Fallback click handler just in case
+        // Fallback click handler
         noBtn.addEventListener("click", (e) => { e.preventDefault(); moveButton(); });
 
         // --- YES BUTTON LOGIC ---
@@ -112,6 +114,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const waNumber = phone ? phone : ""; 
             const waLink = `https://wa.me/${waNumber}?text=${encodeURIComponent(message)}`;
 
+            // Wait 1.5 seconds to show the cute GIF, then redirect
             setTimeout(() => {
                 window.location.href = waLink;
             }, 1500);
