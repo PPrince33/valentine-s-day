@@ -4,14 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>A Question for You 💖</title>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-    <script type="text/javascript">
-       (function(){
-          // REPLACE 'YOUR_PUBLIC_KEY' WITH YOUR ACTUAL EMAILJS PUBLIC KEY LATER
-          emailjs.init("YOUR_PUBLIC_KEY"); 
-       })();
-    </script>
-    
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
@@ -24,7 +16,7 @@
             <p class="subtitle">A simple question, from the heart 💗</p>
 
             <div id="interactionArea">
-                <input type="text" id="receiverNameInput" placeholder="Your name 💕" autocomplete="off">
+                <input type="text" id="receiverName" placeholder="Your name 💕" autocomplete="off">
                 
                 <div class="buttons-container">
                     <button id="yesBtn" class="btn primary-btn">YES 💘</button>
@@ -34,6 +26,7 @@
 
             <div id="successMessage" class="hidden">
                 <h2 class="success-title">Two hearts, one beautiful moment 💕</h2>
+                <p>Opening WhatsApp to send the good news...</p>
                 <div class="image-container">
                     <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM2Q1YjNhMWQ1ODQxZDU2ZDU4NTQ1YjQ1NjQ1ODQ1ODQ1ODQ1ODQ1OCZlcD12MV9pbnRlcm5hbF9naWZzX2dpZklkJmN0PWc/MDJ9IbxxvDUQM/giphy.gif" alt="Cute Celebration">
                 </div>
@@ -41,7 +34,7 @@
         </div>
 
         <footer>
-            made by <span class="brand">PP33</span> &bull; <a href="https://pp33.carrd.co/" target="_blank">Visit</a>
+            made by <span class="brand">PP33</span>
         </footer>
     </div>
 
