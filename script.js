@@ -61,82 +61,75 @@ document.addEventListener("DOMContentLoaded", () => {
         const successMessage = document.getElementById("successMessage");
         const receiverInput = document.getElementById("receiverName");
 
-        // Initialize button position variables
-        // We set position absolute here so it can move freely
+        // Set initial position to absolute so it can move
         noBtn.style.position = "absolute"; 
 
-        // --- THE "MAGNETIC" REPULSION LOGIC ---
+        // --- MAGNETIC LOGIC WITH STRICT WALLS ---
         const moveButton = (mouseX, mouseY) => {
             const btnRect = noBtn.getBoundingClientRect();
             const btnCenterX = btnRect.left + btnRect.width / 2;
             const btnCenterY = btnRect.top + btnRect.height / 2;
 
-            // Calculate the distance vector (Button - Mouse)
+            // 1. Calculate Vector away from mouse
             let deltaX = btnCenterX - mouseX;
             let deltaY = btnCenterY - mouseY;
 
-            // If the mouse is directly on top (0 distance), give it a random nudge
+            // If mouse is exactly on center, nudge it randomly
             if (deltaX === 0 && deltaY === 0) {
-                deltaX = (Math.random() - 0.5) * 10;
-                deltaY = (Math.random() - 0.5) * 10;
+                deltaX = Math.random() < 0.5 ? 10 : -10;
+                deltaY = Math.random() < 0.5 ? 10 : -10;
             }
 
-            // Calculate the angle to move away
+            // 2. Calculate Angle & Move Distance
             const angle = Math.atan2(deltaY, deltaX);
+            const moveDistance = 150; // Move 150px away
 
-            // Move Distance: A short hop (150px) instead of random teleport
-            const moveDistance = 150; 
-
-            // Calculate new position
+            // 3. Calculate Potential New Position
             let newX = btnRect.left + (Math.cos(angle) * moveDistance);
             let newY = btnRect.top + (Math.sin(angle) * moveDistance);
 
-            // --- BOUNDARY CHECKS (Keep it on screen) ---
-            const padding = 20; // Keep away from edge
-            const maxWidth = window.innerWidth - btnRect.width - padding;
-            const maxHeight = window.innerHeight - btnRect.height - padding;
+            // 4. STRICT WALL CLAMPING (The Fix)
+            // This ensures newX is never less than 10, and never more than width-button-10
+            const padding = 10;
+            const maxLeft = window.innerWidth - noBtn.offsetWidth - padding;
+            const maxTop = window.innerHeight - noBtn.offsetHeight - padding;
 
-            // If it hits the Left/Right wall, bounce it back to center
-            if (newX < padding) newX = padding + 50;
-            if (newX > maxWidth) newX = maxWidth - 50;
+            // Math.min/max logic:
+            // "Don't let it go smaller than 'padding'"
+            // "Don't let it go bigger than 'maxLeft'"
+            newX = Math.min(Math.max(newX, padding), maxLeft);
+            newY = Math.min(Math.max(newY, padding), maxTop);
 
-            // If it hits Top/Bottom wall, bounce it back to center
-            if (newY < padding) newY = padding + 50;
-            if (newY > maxHeight) newY = maxHeight - 50;
-
-            // Apply new position
+            // 5. Apply Position
             noBtn.style.left = `${newX}px`;
             noBtn.style.top = `${newY}px`;
         };
 
-        // 1. Mobile Touch (Instant Jump)
+        // Mobile Touch
         noBtn.addEventListener("touchstart", (e) => {
              e.preventDefault();
-             // Pass touch coordinates
              const touch = e.touches[0];
              moveButton(touch.clientX, touch.clientY);
         });
 
-        // 2. Desktop Mouse (Proximity Slide)
+        // Desktop Mouse
         document.addEventListener("mousemove", (e) => {
             const btnRect = noBtn.getBoundingClientRect();
             const btnCenterX = btnRect.left + btnRect.width / 2;
             const btnCenterY = btnRect.top + btnRect.height / 2;
 
-            // Distance Math
             const distance = Math.sqrt(
                 Math.pow(e.clientX - btnCenterX, 2) + 
                 Math.pow(e.clientY - btnCenterY, 2)
             );
 
-            // TRIGGER DISTANCE: 100px
-            // If mouse gets closer than 100px, push the button away
+            // Trigger movement if closer than 100px
             if (distance < 100) {
                 moveButton(e.clientX, e.clientY);
             }
         });
         
-        // Fallback click handler
+        // Fallback Click
         noBtn.addEventListener("click", (e) => { 
             e.preventDefault(); 
             moveButton(e.clientX, e.clientY); 
