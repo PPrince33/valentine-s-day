@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Your Valentine Link | PP33</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="container fade-in">
+        <h1 class="title">Create Your Valentine</h1>
+        <p class="subtitle">Craft a moment of romance, elegantly.</p>
+        
+        <div class="card">
+            <p class="prompt-text">Enter your name to generate a unique link for your special someone.</p>
+            
+            <input type="text" id="senderNameInput" placeholder="Your name" autocomplete="off">
+            
+            <button id="createLinkBtn" class="btn primary-btn">Create Link</button>
+            
+            <div id="resultArea" class="hidden">
+                <p>Share this link:</p>
+                <div class="link-box">
+                    <input type="text" id="generatedLink" readonly>
+                    <button id="copyBtn" class="btn sm-btn">Copy</button>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            made by <span class="brand">PP33</span> &bull; <a href="https://pp33.carrd.co/" target="_blank">Visit</a>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
