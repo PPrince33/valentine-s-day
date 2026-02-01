@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
     
-    // --- PART 1: INDEX.HTML LOGIC (Sender creates link) ---
+    // --- PART 1: INDEX.HTML LOGIC ---
     const createLinkBtn = document.getElementById("createLinkBtn");
 
     if (createLinkBtn) {
@@ -22,10 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            // Remove non-numeric characters from phone
             const cleanPhone = phone.replace(/\D/g, '');
-
-            // Construct the Link
             const currentUrl = window.location.href;
             const baseUrl = currentUrl.substring(0, currentUrl.lastIndexOf("/")) + "/valentine.html";
             const finalLink = `${baseUrl}?sender=${encodeURIComponent(sender)}&crush=${encodeURIComponent(crush)}&phone=${cleanPhone}`;
@@ -37,7 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         copyBtn.addEventListener("click", () => {
             generatedLinkInput.select();
-            generatedLinkInput.setSelectionRange(0, 99999); // Mobile fix
+            generatedLinkInput.setSelectionRange(0, 99999);
             navigator.clipboard.writeText(generatedLinkInput.value).then(() => {
                 copyBtn.textContent = "Copied!";
                 setTimeout(() => copyBtn.textContent = "Copy", 2000);
@@ -45,7 +42,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // --- PART 2: VALENTINE.HTML LOGIC (Receiver sees question) ---
+    // --- PART 2: VALENTINE.HTML LOGIC ---
     const mainQuestion = document.getElementById("mainQuestion");
 
     if (mainQuestion) {
@@ -64,44 +61,86 @@ document.addEventListener("DOMContentLoaded", () => {
         const successMessage = document.getElementById("successMessage");
         const receiverInput = document.getElementById("receiverName");
 
-        // --- TEASING MOVE LOGIC ---
-        const moveButton = () => {
-            // Calculate a random position within the window
-            const x = Math.random() * (window.innerWidth - noBtn.offsetWidth - 20);
-            const y = Math.random() * (window.innerHeight - noBtn.offsetHeight - 20);
-            
-            noBtn.style.position = "fixed"; // Fixed allows free movement over everything
-            noBtn.style.left = `${x}px`;
-            noBtn.style.top = `${y}px`;
+        // Initialize button position variables
+        // We set position absolute here so it can move freely
+        noBtn.style.position = "absolute"; 
+
+        // --- THE "MAGNETIC" REPULSION LOGIC ---
+        const moveButton = (mouseX, mouseY) => {
+            const btnRect = noBtn.getBoundingClientRect();
+            const btnCenterX = btnRect.left + btnRect.width / 2;
+            const btnCenterY = btnRect.top + btnRect.height / 2;
+
+            // Calculate the distance vector (Button - Mouse)
+            let deltaX = btnCenterX - mouseX;
+            let deltaY = btnCenterY - mouseY;
+
+            // If the mouse is directly on top (0 distance), give it a random nudge
+            if (deltaX === 0 && deltaY === 0) {
+                deltaX = (Math.random() - 0.5) * 10;
+                deltaY = (Math.random() - 0.5) * 10;
+            }
+
+            // Calculate the angle to move away
+            const angle = Math.atan2(deltaY, deltaX);
+
+            // Move Distance: A short hop (150px) instead of random teleport
+            const moveDistance = 150; 
+
+            // Calculate new position
+            let newX = btnRect.left + (Math.cos(angle) * moveDistance);
+            let newY = btnRect.top + (Math.sin(angle) * moveDistance);
+
+            // --- BOUNDARY CHECKS (Keep it on screen) ---
+            const padding = 20; // Keep away from edge
+            const maxWidth = window.innerWidth - btnRect.width - padding;
+            const maxHeight = window.innerHeight - btnRect.height - padding;
+
+            // If it hits the Left/Right wall, bounce it back to center
+            if (newX < padding) newX = padding + 50;
+            if (newX > maxWidth) newX = maxWidth - 50;
+
+            // If it hits Top/Bottom wall, bounce it back to center
+            if (newY < padding) newY = padding + 50;
+            if (newY > maxHeight) newY = maxHeight - 50;
+
+            // Apply new position
+            noBtn.style.left = `${newX}px`;
+            noBtn.style.top = `${newY}px`;
         };
 
         // 1. Mobile Touch (Instant Jump)
         noBtn.addEventListener("touchstart", (e) => {
-             e.preventDefault(); 
-             moveButton(); 
+             e.preventDefault();
+             // Pass touch coordinates
+             const touch = e.touches[0];
+             moveButton(touch.clientX, touch.clientY);
         });
 
-        // 2. Desktop Mouse Proximity (Teasing Slide)
+        // 2. Desktop Mouse (Proximity Slide)
         document.addEventListener("mousemove", (e) => {
             const btnRect = noBtn.getBoundingClientRect();
             const btnCenterX = btnRect.left + btnRect.width / 2;
             const btnCenterY = btnRect.top + btnRect.height / 2;
 
-            // Calculate distance between mouse and button center
+            // Distance Math
             const distance = Math.sqrt(
                 Math.pow(e.clientX - btnCenterX, 2) + 
                 Math.pow(e.clientY - btnCenterY, 2)
             );
 
-            // TEASING DISTANCE: 80px (approx 2cm)
-            // It lets you get closer before running away!
-            if (distance < 80) {
-                moveButton();
+            // TRIGGER DISTANCE: 100px
+            // If mouse gets closer than 100px, push the button away
+            if (distance < 100) {
+                moveButton(e.clientX, e.clientY);
             }
         });
         
         // Fallback click handler
-        noBtn.addEventListener("click", (e) => { e.preventDefault(); moveButton(); });
+        noBtn.addEventListener("click", (e) => { 
+            e.preventDefault(); 
+            moveButton(e.clientX, e.clientY); 
+        });
 
         // --- YES BUTTON LOGIC ---
         yesBtn.addEventListener("click", () => {
@@ -114,7 +153,6 @@ document.addEventListener("DOMContentLoaded", () => {
             const waNumber = phone ? phone : ""; 
             const waLink = `https://wa.me/${waNumber}?text=${encodeURIComponent(message)}`;
 
-            // Wait 1.5 seconds to show the cute GIF, then redirect
             setTimeout(() => {
                 window.location.href = waLink;
             }, 1500);
