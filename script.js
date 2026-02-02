@@ -52,8 +52,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const phone = params.get("phone");
 
         document.getElementById("displaySenderName").textContent = sender;
-        const receiverInput = document.getElementById("receiverName");
-        receiverInput.value = crush;
         mainQuestion.innerHTML = `Hey ${crush}, be my Valentine? 💖`;
 
         const yesBtn = document.getElementById("yesBtn");
@@ -62,79 +60,73 @@ document.addEventListener("DOMContentLoaded", () => {
         const successMessage = document.getElementById("successMessage");
 
         // --- TEASING LOGIC (The Dodge) ---
-        setTimeout(() => {
-            // Capture original position relative to offsetParent
-            const noBtnOriginalPos = {
-                x: noBtn.offsetLeft,
-                y: noBtn.offsetTop
-            };
+        
+        // 1. Setup initial position
+        const rect = noBtn.getBoundingClientRect();
+        const noBtnOriginalPos = { x: rect.left, y: rect.top };
+        
+        noBtn.style.position = "absolute";
+        noBtn.style.left = `${noBtnOriginalPos.x}px`;
+        noBtn.style.top = `${noBtnOriginalPos.y}px`;
+        noBtn.style.transition = "left 0.2s ease, top 0.2s ease"; 
 
-            // Fix position and set smooth transitions
-            noBtn.style.position = "absolute";
-            noBtn.style.left = `${noBtnOriginalPos.x}px`;
-            noBtn.style.top = `${noBtnOriginalPos.y}px`;
-            noBtn.style.transition = "left 0.2s ease, top 0.2s ease";
+        const maxMoveDistance = 50; 
+        let moveTimeout;
 
-            const maxMoveDistance = 50; // max pixels to jump from original spot
-            let moveTimeout;
+        const moveNoBtn = (mouseX, mouseY) => {
+            const btnRect = noBtn.getBoundingClientRect();
+            const btnCenterX = btnRect.left + btnRect.width / 2;
+            const btnCenterY = btnRect.top + btnRect.height / 2;
 
-            const moveNoBtn = (mouseX, mouseY) => {
-                const btnRect = noBtn.getBoundingClientRect();
-                const btnCenterX = btnRect.left + btnRect.width / 2;
-                const btnCenterY = btnRect.top + btnRect.height / 2;
+            const distance = Math.hypot(mouseX - btnCenterX, mouseY - btnCenterY);
 
-                const distance = Math.hypot(mouseX - btnCenterX, mouseY - btnCenterY);
+            // Dodge if close (80px)
+            if (distance < 80) {
+                const offsetX = (Math.random() * 2 - 1) * maxMoveDistance;
+                const offsetY = (Math.random() * 2 - 1) * maxMoveDistance;
 
-                if (distance < 80) {
-                    // Random offset within ± maxMoveDistance
-                    const offsetX = (Math.random() * 2 - 1) * maxMoveDistance;
-                    const offsetY = (Math.random() * 2 - 1) * maxMoveDistance;
+                let newX = noBtnOriginalPos.x + offsetX;
+                let newY = noBtnOriginalPos.y + offsetY;
 
-                    let newX = noBtnOriginalPos.x + offsetX;
-                    let newY = noBtnOriginalPos.y + offsetY;
+                const padding = 10;
+                const maxLeft = window.innerWidth - noBtn.offsetWidth - padding;
+                const maxTop = window.innerHeight - noBtn.offsetHeight - padding;
 
-                    // Clamp so button stays inside viewport with padding
-                    const padding = 10;
-                    const maxLeft = window.innerWidth - noBtn.offsetWidth - padding;
-                    const maxTop = window.innerHeight - noBtn.offsetHeight - padding;
+                newX = Math.min(Math.max(newX, padding), maxLeft);
+                newY = Math.min(Math.max(newY, padding), maxTop);
 
-                    newX = Math.min(Math.max(newX, padding), maxLeft);
-                    newY = Math.min(Math.max(newY, padding), maxTop);
+                noBtn.style.left = `${newX}px`;
+                noBtn.style.top = `${newY}px`;
 
-                    noBtn.style.left = `${newX}px`;
-                    noBtn.style.top = `${newY}px`;
+                if (moveTimeout) clearTimeout(moveTimeout);
+                moveTimeout = setTimeout(() => {
+                    noBtn.style.left = `${noBtnOriginalPos.x}px`;
+                    noBtn.style.top = `${noBtnOriginalPos.y}px`;
+                }, 2000);
+            }
+        };
 
-                    if (moveTimeout) clearTimeout(moveTimeout);
-                    moveTimeout = setTimeout(() => {
-                        noBtn.style.left = `${noBtnOriginalPos.x}px`;
-                        noBtn.style.top = `${noBtnOriginalPos.y}px`;
-                    }, 2000);
-                }
-            };
+        document.addEventListener("mousemove", (e) => moveNoBtn(e.clientX, e.clientY));
+        
+        noBtn.addEventListener("touchstart", (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            moveNoBtn(touch.clientX, touch.clientY);
+        });
 
-            // Event listeners for NO button movement
-            document.addEventListener("mousemove", (e) => moveNoBtn(e.clientX, e.clientY));
-
-            noBtn.addEventListener("touchstart", (e) => {
-                e.preventDefault();
-                const touch = e.touches[0];
-                moveNoBtn(touch.clientX, touch.clientY);
-            });
-
-            noBtn.addEventListener("click", (e) => {
-                e.preventDefault();
-                moveNoBtn(e.clientX, e.clientY);
-            });
-        }, 0);
+        noBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            moveNoBtn(e.clientX, e.clientY);
+        });
 
         // --- YES BUTTON LOGIC ---
         yesBtn.addEventListener("click", () => {
-            const finalReceiverName = receiverInput.value.trim() || crush;
-
+            
             interactionArea.style.display = "none";
             successMessage.classList.remove("hidden");
 
-            const message = `Hey ${sender}! It's ${finalReceiverName}. I said YES to being your Valentine! 💖💘`;
+            // Use the 'crush' variable directly from the URL params
+            const message = `Hey ${sender}! It's ${crush}. I said YES to being your Valentine! 💖💘`;
             const waNumber = phone ? phone : ""; 
             const waLink = `https://wa.me/${waNumber}?text=${encodeURIComponent(message)}`;
 
