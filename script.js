@@ -36,7 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
       generatedLinkInput.setSelectionRange(0, 99999);
       navigator.clipboard.writeText(generatedLinkInput.value).then(() => {
         copyBtn.textContent = "Copied!";
-        setTimeout(() => copyBtn.textContent = "Copy", 2000);
+        setTimeout(() => (copyBtn.textContent = "Copy"), 2000);
       });
     });
   }
@@ -45,24 +45,24 @@ document.addEventListener("DOMContentLoaded", () => {
   const mainQuestion = document.getElementById("mainQuestion");
 
   if (mainQuestion) {
-    // 1. Parse URL Parameters
+    // Parse URL parameters
     const params = new URLSearchParams(window.location.search);
     const sender = params.get("sender") || "Admirer";
     const crush = params.get("crush") || "You";
     const phone = params.get("phone");
 
-    // 2. Set Texts
+    // Set sender display and main question text
     const senderDisplay = document.getElementById("displaySenderName");
     if (senderDisplay) senderDisplay.textContent = sender;
     mainQuestion.innerHTML = `Dear ${crush}, will you be my Valentine? 💖`;
 
-    // 3. Get buttons and UI elements
+    // Get buttons and areas
     const yesBtn = document.getElementById("yesBtn");
     const noBtn = document.getElementById("noBtn");
     const interactionArea = document.getElementById("interactionArea");
     const successMessage = document.getElementById("successMessage");
 
-    // --- TEASING NO BUTTON LOGIC ---
+    // State flags
     let hasSwitchedToAbsolute = false;
     let isAnimating = false;
 
@@ -73,37 +73,31 @@ document.addEventListener("DOMContentLoaded", () => {
       const btnCenterX = btnRect.left + btnRect.width / 2;
       const btnCenterY = btnRect.top + btnRect.height / 2;
 
-      // Distance between cursor/touch and button center
       const distance = Math.hypot(mouseX - btnCenterX, mouseY - btnCenterY);
 
-      // Trigger distance threshold
       if (distance < 100) {
-        // Switch to absolute positioning once on first trigger to avoid jumps
         if (!hasSwitchedToAbsolute) {
+          // Lock position and switch to absolute
           noBtn.style.position = "absolute";
-          // Lock position exactly where it visually was
           noBtn.style.left = `${btnRect.left + window.scrollX}px`;
           noBtn.style.top = `${btnRect.top + window.scrollY}px`;
-          // Add smooth transition for glide effect
           noBtn.style.transition = "left 0.4s ease-out, top 0.4s ease-out";
           hasSwitchedToAbsolute = true;
         }
 
         isAnimating = true;
 
-        // Move in small random hops (30 to 80 pixels) to tease user
+        // Random offset between 30 and 80 pixels in random direction
         const minMove = 30;
         const maxMove = 80;
 
-        // Random offset in either direction
         const offsetX = (Math.random() * (maxMove - minMove) + minMove) * (Math.random() < 0.5 ? -1 : 1);
         const offsetY = (Math.random() * (maxMove - minMove) + minMove) * (Math.random() < 0.5 ? -1 : 1);
 
-        // Calculate new position
         let newX = (parseFloat(noBtn.style.left) || 0) + offsetX;
         let newY = (parseFloat(noBtn.style.top) || 0) + offsetY;
 
-        // Boundary constraints so button stays on screen
+        // Keep inside viewport with padding
         const padding = 20;
         const maxLeft = window.innerWidth - noBtn.offsetWidth - padding;
         const maxTop = window.innerHeight - noBtn.offsetHeight - padding;
@@ -111,34 +105,33 @@ document.addEventListener("DOMContentLoaded", () => {
         newX = Math.min(Math.max(newX, padding), maxLeft);
         newY = Math.min(Math.max(newY, padding), maxTop);
 
-        // Apply new position
         noBtn.style.left = `${newX}px`;
         noBtn.style.top = `${newY}px`;
 
-        // After transition duration reset animation flag
+        // Reset animation flag after transition ends (400ms)
         setTimeout(() => {
           isAnimating = false;
         }, 400);
       }
     };
 
-    // Move No button away on mouse move near it
+    // Mouse move listener to trigger No button move
     document.addEventListener("mousemove", (e) => moveNoBtn(e.clientX, e.clientY));
 
-    // On touch devices, move on touch start to tease finger
+    // Touch on No button to trigger move (mobile)
     noBtn.addEventListener("touchstart", (e) => {
       e.preventDefault();
       const touch = e.touches[0];
       moveNoBtn(touch.clientX, touch.clientY);
     });
 
-    // Also tease on click just in case
+    // Click on No button triggers move too (just in case)
     noBtn.addEventListener("click", (e) => {
       e.preventDefault();
       moveNoBtn(e.clientX, e.clientY);
     });
 
-    // --- YES BUTTON CLICK ---
+    // Yes button click handler
     yesBtn.addEventListener("click", () => {
       interactionArea.style.display = "none";
       successMessage.classList.remove("hidden");
