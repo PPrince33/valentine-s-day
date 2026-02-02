@@ -63,10 +63,11 @@ document.addEventListener("DOMContentLoaded", () => {
         // --- TEASING LOGIC (The Dodge) ---
         
         // Setup initial position
-        const rect = noBtn.getBoundingClientRect();
+        const yesRect = yesBtn.getBoundingClientRect();
+
         const noBtnOriginalPos = {
-          x: rect.left,
-          y: window.innerHeight / 2 - noBtn.offsetHeight / 2
+          x: yesRect.right + 20,  // 20px to the right of Yes button
+          y: yesRect.top          // aligned vertically with Yes button
         };
         
         noBtn.style.position = "absolute";
