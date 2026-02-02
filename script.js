@@ -62,19 +62,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // --- TEASING LOGIC (The Dodge) ---
         
-        // Setup initial position
-        const yesRect = yesBtn.getBoundingClientRect();
-
-        const noBtnOriginalPos = {
-          x: yesRect.right + 20,  // 20px to the right of Yes button
-          y: yesRect.top          // aligned vertically with Yes button
-        };
+        // --- TEASING LOGIC (The Dodge) ---
         
-        noBtn.style.position = "absolute";
-        noBtn.style.left = `${noBtnOriginalPos.x}px`;
-        noBtn.style.top = `${noBtnOriginalPos.y}px`;
-        noBtn.style.transition = "left 0.2s ease, top 0.2s ease";
+        // We track if the button has started moving yet
+        let hasMoved = false;
 
+        // Calculate where we WANT it to be relative to the Yes button, 
+        // but we won't apply this until the mouse gets close.
+        const getOriginalPos = () => {
+            const yesRect = yesBtn.getBoundingClientRect();
+            return {
+                x: yesRect.right + 20, // 20px to the right of Yes
+                y: yesRect.top         // Aligned with top of Yes
+            };
+        };
+
+        // Initialize variables
         const maxMoveDistance = 50; 
         let moveTimeout;
 
@@ -85,14 +88,31 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const distance = Math.hypot(mouseX - btnCenterX, mouseY - btnCenterY);
 
-            // Dodge if close (80px)
+            // Trigger the dodge if mouse is close (within 80px)
             if (distance < 80) {
+                
+                // 1. FIRST TIME SETUP: 
+                // If the button is still static (sitting next to Yes naturally),
+                // we switch it to absolute positioning now so it can move.
+                if (!hasMoved) {
+                    noBtn.style.position = "absolute";
+                    // We set the initial coordinates to match its current visual spot
+                    // adding scrollX/Y ensures it doesn't jump if the page is scrolled
+                    noBtn.style.left = `${btnRect.left + window.scrollX}px`;
+                    noBtn.style.top = `${btnRect.top + window.scrollY}px`;
+                    hasMoved = true;
+                }
+
+                // 2. THE MOVE LOGIC:
+                // Now we calculate the random move
                 const offsetX = (Math.random() * 2 - 1) * maxMoveDistance;
                 const offsetY = (Math.random() * 2 - 1) * maxMoveDistance;
 
-                let newX = noBtnOriginalPos.x + offsetX;
-                let newY = noBtnOriginalPos.y + offsetY;
+                // We calculate new positions based on where it currently is
+                let newX = (parseFloat(noBtn.style.left) || 0) + offsetX;
+                let newY = (parseFloat(noBtn.style.top) || 0) + offsetY;
 
+                // Keep within screen bounds
                 const padding = 10;
                 const maxLeft = window.innerWidth - noBtn.offsetWidth - padding;
                 const maxTop = window.innerHeight - noBtn.offsetHeight - padding;
@@ -103,10 +123,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 noBtn.style.left = `${newX}px`;
                 noBtn.style.top = `${newY}px`;
 
+                // Optional: Reset to near Yes button after 2 seconds
                 if (moveTimeout) clearTimeout(moveTimeout);
                 moveTimeout = setTimeout(() => {
-                    noBtn.style.left = `${noBtnOriginalPos.x}px`;
-                    noBtn.style.top = `${noBtnOriginalPos.y}px`;
+                    const resetPos = getOriginalPos();
+                    noBtn.style.left = `${resetPos.x + window.scrollX}px`;
+                    noBtn.style.top = `${resetPos.y + window.scrollY}px`;
                 }, 2000);
             }
         };
