@@ -1,6 +1,8 @@
 document.addEventListener("DOMContentLoaded", () => {
     
-    // --- PART 1: INDEX.HTML LOGIC ---
+    // ==========================================
+    // --- PART 1: INDEX.HTML (GENERATOR) ---
+    // ==========================================
     const createLinkBtn = document.getElementById("createLinkBtn");
 
     if (createLinkBtn) {
@@ -23,6 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             const cleanPhone = phone.replace(/\D/g, '');
+            // Assumes valentine.html is in the same folder
             const currentUrl = window.location.href;
             const baseUrl = currentUrl.substring(0, currentUrl.lastIndexOf("/")) + "/valentine.html";
             const finalLink = `${baseUrl}?sender=${encodeURIComponent(sender)}&crush=${encodeURIComponent(crush)}&phone=${cleanPhone}`;
@@ -34,7 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         copyBtn.addEventListener("click", () => {
             generatedLinkInput.select();
-            generatedLinkInput.setSelectionRange(0, 99999);
+            generatedLinkInput.setSelectionRange(0, 99999); // For mobile
             navigator.clipboard.writeText(generatedLinkInput.value).then(() => {
                 copyBtn.textContent = "Copied!";
                 setTimeout(() => copyBtn.textContent = "Copy", 2000);
@@ -42,67 +45,75 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // --- PART 2: VALENTINE.HTML LOGIC ---
+    // ==========================================
+    // --- PART 2: VALENTINE.HTML (RECEIVER) ---
+    // ==========================================
     const mainQuestion = document.getElementById("mainQuestion");
 
     if (mainQuestion) {
+        // 1. Get URL Parameters
         const params = new URLSearchParams(window.location.search);
         const sender = params.get("sender") || "Admirer";
         const crush = params.get("crush") || "You";
         const phone = params.get("phone");
 
-        // Update text content as requested
-        document.getElementById("displaySenderName").textContent = sender;
+        // 2. Set Text Content
+        const senderDisplay = document.getElementById("displaySenderName");
+        if(senderDisplay) senderDisplay.textContent = sender;
         mainQuestion.innerHTML = `Dear ${crush}, will you be my Valentine? 💖`;
 
+        // 3. Get Elements
         const yesBtn = document.getElementById("yesBtn");
         const noBtn = document.getElementById("noBtn");
         const interactionArea = document.getElementById("interactionArea");
         const successMessage = document.getElementById("successMessage");
 
-        // --- TEASING LOGIC (Smooth Dodge) ---
-        // Position No button near Yes button initially
-        const getOriginalPos = () => {
-            const yesRect = yesBtn.getBoundingClientRect();
-            return {
-                x: yesRect.right + 20,
-                y: yesRect.top
-            };
-        };
-
-        let noBtnOriginalPos = getOriginalPos();
-        let isAnimating = false;
-        let returnTimeout;
-
-        // Set initial style and position for No button
-        noBtn.style.position = "absolute";
-        noBtn.style.left = `${noBtnOriginalPos.x}px`;
-        noBtn.style.top = `${noBtnOriginalPos.y}px`;
-        noBtn.style.transition = "left 0.5s ease-out, top 0.5s ease-out";
-
-        const maxMoveDistance = 100;
-        const dodgeDistanceTrigger = 80;
+        // --- TEASING LOGIC (The Smooth Dodge) ---
         
+        // State variables
+        let hasMoved = false;     // Tracks if we have switched to absolute positioning
+        let isAnimating = false;  // Tracks if the button is currently gliding
+
         const moveNoBtn = (mouseX, mouseY) => {
+            // Don't calculate if currently mid-animation
             if (isAnimating) return;
 
             const btnRect = noBtn.getBoundingClientRect();
             const btnCenterX = btnRect.left + btnRect.width / 2;
             const btnCenterY = btnRect.top + btnRect.height / 2;
 
+            // Calculate distance between mouse and button center
             const distance = Math.hypot(mouseX - btnCenterX, mouseY - btnCenterY);
 
-            if (distance < dodgeDistanceTrigger) {
+            // TRIGGER DISTANCE: If mouse gets within 100px
+            if (distance < 100) {
+                
+                // STEP A: The Initial Switch
+                // The first time the user gets close, we lock the button's 
+                // visual position but switch it to 'absolute' so it can move freely.
+                if (!hasMoved) {
+                    noBtn.style.position = "absolute";
+                    noBtn.style.left = `${btnRect.left + window.scrollX}px`;
+                    noBtn.style.top = `${btnRect.top + window.scrollY}px`;
+                    
+                    // Add smooth transition for the movement
+                    noBtn.style.transition = "left 0.4s ease-out, top 0.4s ease-out";
+                    hasMoved = true;
+                }
+
+                // STEP B: The Move
                 isAnimating = true;
 
-                // Random offset between -maxMoveDistance and +maxMoveDistance
-                const offsetX = (Math.random() * 2 - 1) * maxMoveDistance;
-                const offsetY = (Math.random() * 2 - 1) * maxMoveDistance;
+                // Move small pixels away (Teasing effect: 30px to 80px jumps)
+                // We use Math.random() to make it unpredictable
+                const moveRange = 80; 
+                const offsetX = (Math.random() * moveRange * 2) - moveRange; 
+                const offsetY = (Math.random() * moveRange * 2) - moveRange; 
 
-                let newX = noBtnOriginalPos.x + offsetX;
-                let newY = noBtnOriginalPos.y + offsetY;
+                let newX = (parseFloat(noBtn.style.left) || 0) + offsetX;
+                let newY = (parseFloat(noBtn.style.top) || 0) + offsetY;
 
-                // Keep button inside viewport boundaries with padding
+                // Screen Boundary Checks (Keep it on screen)
                 const padding = 20;
                 const maxLeft = window.innerWidth - noBtn.offsetWidth - padding;
                 const maxTop = window.innerHeight - noBtn.offsetHeight - padding;
@@ -110,28 +121,31 @@ document.addEventListener("DOMContentLoaded", () => {
                 newX = Math.min(Math.max(newX, padding), maxLeft);
                 newY = Math.min(Math.max(newY, padding), maxTop);
 
+                // Apply new position
                 noBtn.style.left = `${newX}px`;
                 noBtn.style.top = `${newY}px`;
 
-                // Clear any existing timeout before setting a new one
-                if (returnTimeout) clearTimeout(returnTimeout);
-
-                // After 1.5 seconds, return smoothly to original position
-                returnTimeout = setTimeout(() => {
-                    noBtn.style.left = `${noBtnOriginalPos.x}px`;
-                    noBtn.style.top = `${noBtnOriginalPos.y}px`;
+                // Reset animation flag after transition finishes (400ms)
+                setTimeout(() => {
                     isAnimating = false;
-                }, 1500);
+                }, 400);
             }
         };
 
+        // Desktop: Run away on mouse hover
         document.addEventListener("mousemove", (e) => moveNoBtn(e.clientX, e.clientY));
-
-        // Mobile touch support
+        
+        // Mobile: Run away on touch
         noBtn.addEventListener("touchstart", (e) => {
-            e.preventDefault();
+            e.preventDefault(); // Prevents "click"
             const touch = e.touches[0];
             moveNoBtn(touch.clientX, touch.clientY);
+        });
+        
+        // Fallback: Click
+        noBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            moveNoBtn(e.clientX, e.clientY);
         });
 
         // --- YES BUTTON LOGIC ---
@@ -143,6 +157,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const waNumber = phone ? phone : ""; 
             const waLink = `https://wa.me/${waNumber}?text=${encodeURIComponent(message)}`;
 
+            // Wait 1.5 seconds so they can see the success message, then redirect
             setTimeout(() => {
                 window.location.href = waLink;
             }, 1500);
