@@ -64,9 +64,9 @@ document.addEventListener("DOMContentLoaded", () => {
         
         // Setup initial position
         const rect = noBtn.getBoundingClientRect();
-        const noBtnOriginalPos = { 
-            x: rect.left, 
-            y: rect.top - 100 // move 100px higher
+        const noBtnOriginalPos = {
+          x: rect.left,
+          y: window.innerHeight / 2 - noBtn.offsetHeight / 2
         };
         
         noBtn.style.position = "absolute";
