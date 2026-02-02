@@ -64,12 +64,15 @@ document.addEventListener("DOMContentLoaded", () => {
         
         // Setup initial position
         const rect = noBtn.getBoundingClientRect();
-        const noBtnOriginalPos = { x: rect.left, y: rect.top };
+        const noBtnOriginalPos = { 
+            x: rect.left, 
+            y: rect.top - 100 // move 100px higher
+        };
         
         noBtn.style.position = "absolute";
         noBtn.style.left = `${noBtnOriginalPos.x}px`;
         noBtn.style.top = `${noBtnOriginalPos.y}px`;
-        noBtn.style.transition = "left 0.2s ease, top 0.2s ease"; 
+        noBtn.style.transition = "left 0.2s ease, top 0.2s ease";
 
         const maxMoveDistance = 50; 
         let moveTimeout;
