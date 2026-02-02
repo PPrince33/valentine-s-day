@@ -51,8 +51,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const crush = params.get("crush") || "You";
         const phone = params.get("phone");
 
+        // 1. Update the Text exactly as requested
         document.getElementById("displaySenderName").textContent = sender;
-        mainQuestion.innerHTML = `Hey ${crush}, be my Valentine? 💖`;
+        mainQuestion.innerHTML = `Dear ${crush}, will you be my Valentine? 💖`;
 
         const yesBtn = document.getElementById("yesBtn");
         const noBtn = document.getElementById("noBtn");
@@ -61,7 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // --- TEASING LOGIC (The Dodge) ---
         
-        // 1. Setup initial position
+        // Setup initial position
         const rect = noBtn.getBoundingClientRect();
         const noBtnOriginalPos = { x: rect.left, y: rect.top };
         
@@ -125,7 +126,7 @@ document.addEventListener("DOMContentLoaded", () => {
             interactionArea.style.display = "none";
             successMessage.classList.remove("hidden");
 
-            // Use the 'crush' variable directly from the URL params
+            // No need to check input anymore, just use the 'crush' variable from URL
             const message = `Hey ${sender}! It's ${crush}. I said YES to being your Valentine! 💖💘`;
             const waNumber = phone ? phone : ""; 
             const waLink = `https://wa.me/${waNumber}?text=${encodeURIComponent(message)}`;
